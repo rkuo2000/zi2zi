@@ -60,9 +60,9 @@ class UNet(object):
                 print("create sample directory")
 
     def encoder(self, images, is_training, reuse=False):
-        with tf.variable_scope("generator"):
+        with tf.compat.v1.variable_scope("generator"):
             if reuse:
-                tf.get_variable_scope().reuse_variables()
+                tf.compat.v1.get_variable_scope().reuse_variables()
 
             encode_layers = dict()
 
@@ -86,9 +86,9 @@ class UNet(object):
             return e8, encode_layers
 
     def decoder(self, encoded, encoding_layers, ids, inst_norm, is_training, reuse=False):
-        with tf.variable_scope("generator"):
+        with tf.compat.v1.variable_scope("generator"):
             if reuse:
-                tf.get_variable_scope().reuse_variables()
+                tf.compat.v1.get_variable_scope().reuse_variables()
 
             s = self.output_width
             s2, s4, s8, s16, s32, s64, s128 = int(s / 2), int(s / 4), int(s / 8), int(s / 16), int(s / 32), int(
@@ -135,9 +135,9 @@ class UNet(object):
         return output, e8
 
     def discriminator(self, image, is_training, reuse=False):
-        with tf.variable_scope("discriminator"):
+        with tf.compat.v1.variable_scope("discriminator"):
             if reuse:
-                tf.get_variable_scope().reuse_variables()
+                tf.compat.v1.get_variable_scope().reuse_variables()
             h0 = lrelu(conv2d(image, self.discriminator_dim, scope="d_h0_conv"))
             h1 = lrelu(batch_norm(conv2d(h0, self.discriminator_dim * 2, scope="d_h1_conv"),
                                   is_training, scope="d_bn_1"))
@@ -153,16 +153,16 @@ class UNet(object):
             return tf.nn.sigmoid(fc1), fc1, fc2
 
     def build_model(self, is_training=True, inst_norm=False, no_target_source=False):
-        real_data = tf.placeholder(tf.float32,
+        real_data = tf.compat.v1.placeholder(tf.float32,
                                    [self.batch_size, self.input_width, self.input_width,
                                     self.input_filters + self.output_filters],
                                    name='real_A_and_B_images')
-        embedding_ids = tf.placeholder(tf.int64, shape=None, name="embedding_ids")
-        no_target_data = tf.placeholder(tf.float32,
+        embedding_ids = tf.compat.v1.placeholder(tf.int64, shape=None, name="embedding_ids")
+        no_target_data = tf.compat.v1.placeholder(tf.float32,
                                         [self.batch_size, self.input_width, self.input_width,
                                          self.input_filters + self.output_filters],
                                         name='no_target_A_and_B_images')
-        no_target_ids = tf.placeholder(tf.int64, shape=None, name="no_target_embedding_ids")
+        no_target_ids = tf.compat.v1.placeholder(tf.int64, shape=None, name="no_target_embedding_ids")
 
         # target images
         real_B = real_data[:, :, :, :self.input_filters]
@@ -189,16 +189,16 @@ class UNet(object):
         # category loss
         true_labels = tf.reshape(tf.one_hot(indices=embedding_ids, depth=self.embedding_num),
                                  shape=[self.batch_size, self.embedding_num])
-        real_category_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=real_category_logits,
+        real_category_loss = tf.math.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=real_category_logits,
                                                                                     labels=true_labels))
-        fake_category_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_category_logits,
+        fake_category_loss = tf.math.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_category_logits,
                                                                                     labels=true_labels))
         category_loss = self.Lcategory_penalty * (real_category_loss + fake_category_loss)
 
         # binary real/fake loss
-        d_loss_real = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=real_D_logits,
+        d_loss_real = tf.math.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=real_D_logits,
                                                                              labels=tf.ones_like(real_D)))
-        d_loss_fake = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_D_logits,
+        d_loss_fake = tf.math.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_D_logits,
                                                                              labels=tf.zeros_like(fake_D)))
         # L1 loss between real and generated images
         l1_loss = self.L1_penalty * tf.reduce_mean(tf.abs(fake_B - real_B))
@@ -208,7 +208,7 @@ class UNet(object):
                    + tf.nn.l2_loss(fake_B[:, :, 1:, :] - fake_B[:, :, :width - 1, :]) / width) * self.Ltv_penalty
 
         # maximize the chance generator fool the discriminator
-        cheat_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_D_logits,
+        cheat_loss = tf.math.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_D_logits,
                                                                             labels=tf.ones_like(fake_D)))
 
         d_loss = d_loss_real + d_loss_fake + category_loss / 2.0
@@ -230,16 +230,16 @@ class UNet(object):
                                                                                             is_training=is_training,
                                                                                             reuse=True)
             encoded_no_target_B = self.encoder(no_target_B, is_training, reuse=True)[0]
-            no_target_const_loss = tf.reduce_mean(
-                tf.square(encoded_no_target_A - encoded_no_target_B)) * self.Lconst_penalty
+            no_target_const_loss = tf.math.reduce_mean(
+                tf.math.square(encoded_no_target_A - encoded_no_target_B)) * self.Lconst_penalty
             no_target_category_loss = tf.reduce_mean(
                 tf.nn.sigmoid_cross_entropy_with_logits(logits=no_target_category_logits,
                                                         labels=no_target_labels)) * self.Lcategory_penalty
 
-            d_loss_no_target = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=no_target_D_logits,
+            d_loss_no_target = tf.math.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=no_target_D_logits,
                                                                                       labels=tf.zeros_like(
                                                                                           no_target_D)))
-            cheat_loss += tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=no_target_D_logits,
+            cheat_loss += tf.math.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=no_target_D_logits,
                                                                                  labels=tf.ones_like(no_target_D)))
             d_loss = d_loss_real + d_loss_fake + d_loss_no_target + (category_loss + no_target_category_loss) / 3.0
             g_loss = cheat_loss / 2.0 + l1_loss + \
@@ -311,7 +311,7 @@ class UNet(object):
         return g_vars, d_vars
 
     def retrieve_generator_vars(self):
-        all_vars = tf.global_variables()
+        all_vars = tf.compat.v1.global_variables()
         generate_vars = [var for var in all_vars if 'embedding' in var.name or "g_" in var.name]
         return generate_vars
 
@@ -398,7 +398,7 @@ class UNet(object):
             source_iter = source_provider.get_random_embedding_iter(self.batch_size, embedding_ids)
 
         tf.global_variables_initializer().run()
-        saver = tf.train.Saver(var_list=self.retrieve_generator_vars())
+        saver = tf.compat.v1.train.Saver(var_list=self.retrieve_generator_vars())
         self.restore_model(saver, model_dir)
 
         def save_imgs(imgs, count):
@@ -421,7 +421,7 @@ class UNet(object):
             save_imgs(batch_buffer, count)
 
     def interpolate(self, source_obj, between, model_dir, save_dir, steps):
-        tf.global_variables_initializer().run()
+        tf.compat.v1.global_variables_initializer().run()
         saver = tf.train.Saver(var_list=self.retrieve_generator_vars())
         self.restore_model(saver, model_dir)
         # new interpolated dimension
