@@ -43,10 +43,10 @@ args = parser.parse_args()
 
 
 def main(_):
-    config = tf.ConfigProto()
+    config = tf.compat.v1.ConfigProto()
     config.gpu_options.allow_growth = True
 
-    with tf.Session(config=config) as sess:
+    with tf.compat.v1.Session(config=config) as sess:
         model = UNet(args.experiment_dir, batch_size=args.batch_size, experiment_id=args.experiment_id,
                      input_width=args.image_size, output_width=args.image_size, embedding_num=args.embedding_num,
                      embedding_dim=args.embedding_dim, L1_penalty=args.L1_penalty, Lconst_penalty=args.Lconst_penalty,
