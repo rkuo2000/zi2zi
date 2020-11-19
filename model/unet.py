@@ -501,10 +501,10 @@ class UNet(object):
         if not self.sess:
             raise Exception("no session registered")
 
-        learning_rate = tf.placeholder(tf.float32, name="learning_rate")
-        d_optimizer = tf.train.AdamOptimizer(learning_rate, beta1=0.5).minimize(loss_handle.d_loss, var_list=d_vars)
-        g_optimizer = tf.train.AdamOptimizer(learning_rate, beta1=0.5).minimize(loss_handle.g_loss, var_list=g_vars)
-        tf.global_variables_initializer().run()
+        learning_rate = tf.compat.v1.placeholder(tf.float32, name="learning_rate")
+        d_optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate, beta1=0.5).minimize(loss_handle.d_loss, var_list=d_vars)
+        g_optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate, beta1=0.5).minimize(loss_handle.g_loss, var_list=g_vars)
+        tf.compat.v1.global_variables_initializer().run()
         real_data = input_handle.real_data
         embedding_ids = input_handle.embedding_ids
         no_target_data = input_handle.no_target_data
@@ -515,7 +515,7 @@ class UNet(object):
         total_batches = data_provider.compute_total_batch_num(self.batch_size)
         val_batch_iter = data_provider.get_val_iter(self.batch_size)
 
-        saver = tf.train.Saver(max_to_keep=3)
+        saver = tf.compat.v1.train.Saver(max_to_keep=3)
         summary_writer = tf.summary.FileWriter(self.log_dir, self.sess.graph)
 
         if resume:
