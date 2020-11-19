@@ -516,7 +516,7 @@ class UNet(object):
         val_batch_iter = data_provider.get_val_iter(self.batch_size)
 
         saver = tf.compat.v1.train.Saver(max_to_keep=3)
-        summary_writer = tf.summary.FileWriter(self.log_dir, self.sess.graph)
+        summary_writer = tf.compat.v1.summary.FileWriter(self.log_dir, self.sess.graph)
 
         if resume:
             _, model_dir = self.get_model_id_and_dir()
