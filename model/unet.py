@@ -246,20 +246,20 @@ class UNet(object):
                      (self.Lcategory_penalty * fake_category_loss + no_target_category_loss) / 2.0 + \
                      (const_loss + no_target_const_loss) / 2.0 + tv_loss
 
-        d_loss_real_summary = tf.summary.scalar("d_loss_real", d_loss_real)
-        d_loss_fake_summary = tf.summary.scalar("d_loss_fake", d_loss_fake)
-        category_loss_summary = tf.summary.scalar("category_loss", category_loss)
-        cheat_loss_summary = tf.summary.scalar("cheat_loss", cheat_loss)
-        l1_loss_summary = tf.summary.scalar("l1_loss", l1_loss)
-        fake_category_loss_summary = tf.summary.scalar("fake_category_loss", fake_category_loss)
-        const_loss_summary = tf.summary.scalar("const_loss", const_loss)
-        d_loss_summary = tf.summary.scalar("d_loss", d_loss)
-        g_loss_summary = tf.summary.scalar("g_loss", g_loss)
-        tv_loss_summary = tf.summary.scalar("tv_loss", tv_loss)
+        d_loss_real_summary = tf.compat.v1.summary.scalar("d_loss_real", d_loss_real)
+        d_loss_fake_summary = tf.compat.v1.summary.scalar("d_loss_fake", d_loss_fake)
+        category_loss_summary = tf.compat.v1.summary.scalar("category_loss", category_loss)
+        cheat_loss_summary = tf.compat.v1.summary.scalar("cheat_loss", cheat_loss)
+        l1_loss_summary = tf.compat.v1.summary.scalar("l1_loss", l1_loss)
+        fake_category_loss_summary = tf.compat.v1.summary.scalar("fake_category_loss", fake_category_loss)
+        const_loss_summary = tf.compat.v1.summary.scalar("const_loss", const_loss)
+        d_loss_summary = tf.compat.v1.summary.scalar("d_loss", d_loss)
+        g_loss_summary = tf.compat.v1.summary.scalar("g_loss", g_loss)
+        tv_loss_summary = tf.compat.v1.summary.scalar("tv_loss", tv_loss)
 
-        d_merged_summary = tf.summary.merge([d_loss_real_summary, d_loss_fake_summary,
+        d_merged_summary = tf.compat.v1.summary.merge([d_loss_real_summary, d_loss_fake_summary,
                                              category_loss_summary, d_loss_summary])
-        g_merged_summary = tf.summary.merge([cheat_loss_summary, l1_loss_summary,
+        g_merged_summary = tf.compat.v1.summary.merge([cheat_loss_summary, l1_loss_summary,
                                              fake_category_loss_summary,
                                              const_loss_summary,
                                              g_loss_summary, tv_loss_summary])
@@ -298,7 +298,7 @@ class UNet(object):
         self.sess = sess
 
     def retrieve_trainable_vars(self, freeze_encoder=False):
-        t_vars = tf.trainable_variables()
+        t_vars = tf.compat.v1.trainable_variables()
 
         d_vars = [var for var in t_vars if 'd_' in var.name]
         g_vars = [var for var in t_vars if 'g_' in var.name]
@@ -382,7 +382,7 @@ class UNet(object):
         misc.imsave(sample_img_path, merged_pair)
 
     def export_generator(self, save_dir, model_dir, model_name="gen_model"):
-        saver = tf.train.Saver()
+        saver = tf.compat.v1.train.Saver()
         self.restore_model(saver, model_dir)
 
         gen_saver = tf.train.Saver(var_list=self.retrieve_generator_vars())
