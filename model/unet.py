@@ -184,7 +184,7 @@ class UNet(object):
         # this loss assume that generated imaged and real image
         # should reside in the same space and close to each other
         encoded_fake_B = self.encoder(fake_B, is_training, reuse=True)[0]
-        const_loss = (tf.reduce_mean(tf.square(encoded_real_A - encoded_fake_B))) * self.Lconst_penalty
+        const_loss = (tf.math.reduce_mean(tf.square(encoded_real_A - encoded_fake_B))) * self.Lconst_penalty
 
         # category loss
         true_labels = tf.reshape(tf.one_hot(indices=embedding_ids, depth=self.embedding_num),
@@ -397,7 +397,7 @@ class UNet(object):
         else:
             source_iter = source_provider.get_random_embedding_iter(self.batch_size, embedding_ids)
 
-        tf.global_variables_initializer().run()
+        tf.compat.v1.global_variables_initializer().run()
         saver = tf.compat.v1.train.Saver(var_list=self.retrieve_generator_vars())
         self.restore_model(saver, model_dir)
 
