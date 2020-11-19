@@ -5,7 +5,7 @@ import tensorflow as tf
 
 
 def batch_norm(x, is_training, epsilon=1e-5, decay=0.9, scope="batch_norm"):
-    return tf.keras.layers.BatchNormalization(epsilon=epsilon, scale=True, trainable=is_training, scope=scope)(x)
+    return tf.keras.layers.BatchNormalization(epsilon=epsilon, scale=True, trainable=is_training)(x)
 
 def conv2d(x, output_filters, kh=5, kw=5, sh=2, sw=2, stddev=0.02, scope="conv2d"):
     with tf.compat.v1.variable_scope(scope):
